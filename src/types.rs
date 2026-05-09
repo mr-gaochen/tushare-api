@@ -1,7 +1,7 @@
-use crate::api::{Api, serialize_api_name};
+use crate::api::{serialize_api_name, Api};
+use crate::TushareError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use crate::TushareError;
 use std::convert::Infallible;
 
 /// Tushare API request structure
@@ -322,6 +322,23 @@ impl TryFrom<&str> for TushareRequest {
     type Error = TushareError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        serde_json::from_str(value).map_err(TushareError::SerializationError)
+        // Trim surrounding whitespace to tolerate indented/raw string literals
+        let s = value.trim();
+        if s.is_empty() {
+            return Err(TushareError::Other("empty request string".to_string()));
+        }
+
+        // Attempt to parse and, on failure, include a short debug print to help tests diagnose
+        match serde_json::from_str(s) {
+            Ok(req) => Ok(req),
+            Err(e) => {
+                eprintln!(
+                    "Failed to parse TushareRequest from string (first 200 chars): {:?}\nerror: {}",
+                    &s.chars().take(200).collect::<String>(),
+                    e
+                );
+                Err(TushareError::SerializationError(e))
+            }
+        }
     }
 }

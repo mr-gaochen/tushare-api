@@ -486,7 +486,6 @@ impl TushareClient {
             })?;
 
         let status = response.status();
-
         self.logger.log_http_response(&request_id, status.as_u16());
 
         let response_text = response.text().await.map_err(|e| {
@@ -598,7 +597,10 @@ mod tests {
     #[tokio::test]
     async fn test() {
         unsafe {
-            std::env::set_var("TUSHARE_TOKEN", "xxxx");
+            std::env::set_var(
+                "TUSHARE_TOKEN",
+                "5e7c5766a392caea7fcd83401392e7abfb4b7849a38cf27fd02185b6",
+            );
         }
         let client = TushareClient::from_env().unwrap();
         let response = client
