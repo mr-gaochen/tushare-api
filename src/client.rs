@@ -474,7 +474,7 @@ impl TushareClient {
 
 
 
-        println("{:?}",response);
+        println!("{:?}",response);
 
         let status = response.status();
         self.logger.log_http_response(&request_id, status.as_u16());
