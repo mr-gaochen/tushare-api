@@ -597,10 +597,7 @@ mod tests {
     #[tokio::test]
     async fn test() {
         unsafe {
-            std::env::set_var(
-                "TUSHARE_TOKEN",
-                "5e7c5766a392caea7fcd83401392e7abfb4b7849a38cf27fd02185b6",
-            );
+            std::env::set_var("TUSHARE_TOKEN", "");
         }
         let client = TushareClient::from_env().unwrap();
         let response = client
