@@ -129,7 +129,12 @@ struct InternalTushareRequest<'a> {
     api_name: ApiNameRef<'a>,
     token: &'a str,
     params: &'a HashMap<String, String>,
+    #[serde(skip)]
     fields: &'a [String],
+}
+
+fn slice_is_empty<T>(slice: &[T]) -> bool {
+    slice.is_empty()
 }
 
 /// Tushare API client
@@ -474,7 +479,7 @@ impl TushareClient {
 
         let response = self
             .client
-            .post("http://tsy.xiaodefa.cn")
+            .post("http://tsy.xiaodefa.cn/")
             .json(&internal_request)
             .send()
             .await
@@ -597,7 +602,7 @@ mod tests {
     #[tokio::test]
     async fn test() {
         unsafe {
-            std::env::set_var("TUSHARE_TOKEN", "");
+            std::env::set_var("TUSHARE_TOKEN", "5e7c5766a392caea7fcd83401392e7abfb4b7849a38cf27fd02185b6");
         }
         let client = TushareClient::from_env().unwrap();
         let response = client
@@ -627,4 +632,42 @@ mod tests {
         // let response = client.call_api(req).await.unwrap();
         // println!("resposne = {:?}", response);
     }
+
+
+#[tokio::test]
+async fn test2() {
+    unsafe {
+        std::env::set_var("TUSHARE_TOKEN", "");
+    }
+    let _client = TushareClient::from_env().unwrap();
+    
+    // 测试 1: 没有 fields 的请求（对应你的 curl）
+    let json_without_fields = serde_json::json!({
+        "api_name": "stock_basic",
+        "token": "",
+        "params": { "list_status": "L" }
+    });
+    
+    println!("Test 1: JSON without fields:\n{}", serde_json::to_string_pretty(&json_without_fields).unwrap());
+    
+    let http_client = reqwest::Client::new();
+    let test_response = http_client
+        .post("http://tsy.xiaodefa.cn")
+        .json(&json_without_fields)
+        .send()
+        .await;
+    
+    match test_response {
+        Ok(resp) => {
+            println!("Status: {}", resp.status());
+            let body = resp.text().await.unwrap();
+            if body.len() < 500 {
+                println!("Response body:\n{}", body);
+            } else {
+                println!("Response body (first 500 chars):\n{}", &body[..500]);
+            }
+        }
+        Err(e) => println!("Request error: {}", e),
+    }
+}
 }
