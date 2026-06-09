@@ -501,6 +501,13 @@ impl TushareClient {
         })?;
         self.logger.log_raw_response(&request_id, &response_text);
 
+        if response_text.is_empty() {
+            let elapsed = start_time.elapsed();
+            let msg = format!("server returned empty response body (HTTP {})", status.as_u16());
+            self.logger.log_api_error(&request_id, elapsed, -1, &msg);
+            return Err(TushareError::Other(msg));
+        }
+
         let tushare_response: TushareResponse =
             serde_json::from_str(&response_text).map_err(|e| {
                 let elapsed = start_time.elapsed();
@@ -636,10 +643,6 @@ mod tests {
 
 #[tokio::test]
 async fn test2() {
-    unsafe {
-        std::env::set_var("TUSHARE_TOKEN", "");
-    }
-    let _client = TushareClient::from_env().unwrap();
     
     // 测试 1: 没有 fields 的请求（对应你的 curl）
     let json_without_fields = serde_json::json!({
@@ -652,7 +655,7 @@ async fn test2() {
     
     let http_client = reqwest::Client::new();
     let test_response = http_client
-        .post("http://tsy.xiaodefa.cn")
+        .post("https://tt.xiaodefa.cn")
         .json(&json_without_fields)
         .send()
         .await;

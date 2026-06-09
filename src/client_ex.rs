@@ -214,10 +214,11 @@ impl TushareClientEx {
 }
 
 fn is_retryable_error(err: &TushareError) -> bool {
-    matches!(
-        err,
-        TushareError::HttpError(_) | TushareError::TimeoutError
-    )
+    match err {
+        TushareError::HttpError(_) | TushareError::TimeoutError => true,
+        TushareError::Other(msg) if msg.contains("empty response body") => true,
+        _ => false,
+    }
 }
 
 fn compute_backoff_delay(cfg: &RetryConfig, attempt: usize) -> Duration {
