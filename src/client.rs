@@ -479,7 +479,7 @@ impl TushareClient {
 
         let response = self
             .client
-            .post("http://tsy.xiaodefa.cn/")
+            .post("https://tt.xiaodefa.cn")
             .json(&internal_request)
             .send()
             .await
@@ -646,9 +646,9 @@ async fn test2() {
     
     // 测试 1: 没有 fields 的请求（对应你的 curl）
     let json_without_fields = serde_json::json!({
-        "api_name": "stock_basic",
-        "token": "",
-        "params": { "list_status": "L" }
+        "api_name": "tdx_index",
+        "token": "06450f2dff4140f872787278d971dde3d69723ebedbd03f77b8f91f7",
+        "params": { "trade_data": "L" }
     });
     
     println!("Test 1: JSON without fields:\n{}", serde_json::to_string_pretty(&json_without_fields).unwrap());
